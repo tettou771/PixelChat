@@ -11,24 +11,19 @@ void PixelChat::onSetup(){
     chatView = make_shared<ChatView>();
     chatView->setAlign(ListBox::Align::FitWidth); // 要素を幅で合わせる
     auto scrollView = make_shared<ScrollView>(ScrollView::FitWidth);
-    scrollView->setRect(ofRectangle(50, 50, 400, 500));
+    scrollView->setRect(ofRectangle(100, 100, 1000, 1000));
     scrollView->setContents(chatView);
     addChild(scrollView);
     
     dotView = make_shared<DotView>();
     dotView->setPixelsNum(16, 16);
-    dotView->setRect(ofRectangle(500, 50, 500, 500));
+    dotView->setRect(ofRectangle(1200, 100, 700, 700));
     addChild(dotView);
     
     for (auto &c : dotView->colors) {
         c = ofColor(0);
     }
-    
-    // Make a input field
-    inputField.setup();
-    inputField.bounds = ofRectangle(20, ofGetHeight() - 50, ofGetWidth() - 40, 30);
-    inputField.text = "Please draw a white circle.";
-    
+        
     // setup chatGPT
     string apiKey;
     ofJson configJson = ofLoadJson("config.json");
@@ -89,6 +84,28 @@ void PixelChat::onSetup(){
         ofLog() << "Model " << m;
     }
      */
+    
+    // フォントをロード
+    string fontName;
+#ifdef TARGET_OS_MAC
+    fontName = "HiraKakuStdN-W4";
+#elif defined WIN32
+    fontName = "Meiryo.ttf";
+#else
+    fontName = OF_TTF_SANS;
+#endif
+    ofTrueTypeFontSettings settings(fontName, 30);
+    settings.addRanges(ofAlphabet::Latin);
+    settings.addRanges(ofAlphabet::Japanese);
+    settings.addRange(ofUnicode::KatakanaHalfAndFullwidthForms);
+    settings.addRange(ofUnicode::range{0x301, 0x303F}); // 日本語の句読点などの記号
+    TextArea::font.load(settings);
+    
+    ime.setFont(fontName, 40);
+    ime.enable();
+    setWidth(ofGetWidth());
+    setHeight(ofGetHeight());
+    ime.setPos(20, getHeight() - 200);
 }
 
 void PixelChat::onUpdate(){
@@ -96,11 +113,6 @@ void PixelChat::onUpdate(){
 }
 
 void PixelChat::onDraw(){
-    // Display input area (gray)
-    ofSetColor(80);
-    ofDrawRectangle(inputField.bounds);
-    ofSetColor(255);
-    inputField.draw();
 
     /*
     // Display the conversation on the screen.
@@ -116,23 +128,21 @@ void PixelChat::onDraw(){
 }
 
 void PixelChat::onLocalMatrixChanged() {
-    inputField.bounds = ofRectangle(20, ofGetHeight() - 50, ofGetWidth() - 40, 30);
+    setWidth(ofGetWidth());
+    setHeight(ofGetHeight());
+    ime.setPos(20, getHeight() - 200);
 }
 
 void PixelChat::onKeyPressed(ofKeyEventArgs &key) {
-#ifdef TARGET_OS_MAC
-    if (key.key == OF_KEY_RETURN && ofGetKeyPressed(OF_KEY_COMMAND)) {
-#else
     if (key.key == OF_KEY_RETURN && ofGetKeyPressed(OF_KEY_CONTROL)) {
-#endif
         // Ignore if text is empty.
-        if (inputField.text == "") {
+        if (ime.getString() == "") {
             return;
         }
         
         // send to chatgpt
         ofxChatGPT::ErrorCode errorCode;
-        string message = inputField.text;
+        string message = ime.getString();
 
         // pixel chat data
         ofJson msgData;
@@ -176,6 +186,6 @@ void PixelChat::onKeyPressed(ofKeyEventArgs &key) {
             dotView->onThumbnailSelected(lastMsg->pixels);
         }
 
-        inputField.clear();
+        ime.clear();
     }
 }

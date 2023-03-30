@@ -1,10 +1,9 @@
 #pragma once
 #include "ofxComponentUI.h"
 #include "ofxChatGPT.h"
-#include "ofxTextInputField.h"
 #include "PixelView/DotView.h"
 #include "ChatView/ChatView.h"
-
+#include "ofxGoogleIME.h"
 
 using namespace ofxComponent;
 
@@ -21,6 +20,7 @@ public:
     shared_ptr<ChatView> chatView;
 
     ofxChatGPT chatGPT;
-    ofxTextInputField inputField;
+    
+    ofxGoogleIME ime;
 private:
 };
