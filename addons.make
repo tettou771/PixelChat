@@ -1,6 +1,4 @@
 ofxChatGPT
 ofxComponent
 ofxComponentUI
-ofxDuckDuckGo
 ofxGoogleIME
-ofxTextInputField
